@@ -91,7 +91,6 @@ const typeDefs = gql`
     born: Int
     bookCount: Int!
   }
-
   type Book {
     title: String!
     author: String!
@@ -103,6 +102,14 @@ const typeDefs = gql`
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
+  }
+  type Mutation {
+    addBook(
+      title: String!
+      author: String!
+      published: Int,
+      genres: [String!]!
+    ): Book
   }
 `
 
@@ -135,6 +142,26 @@ const resolvers = {
     bookCount: (root) => {
       const booksWritten = books.filter(b => b.author === root.name)
       return booksWritten.length
+    }
+  },
+  Mutation: {
+    addBook: (root, args) => {
+      /* If author doesn't exit, and author to authors */
+      if (!(authors.find(author => author.name === args.author))) {
+        const newAuthor = { name: args.author}
+        authors = [...authors, newAuthor]
+      }
+
+      /* Then add the book to the book list */
+      const newBook = { 
+        title: args.title,
+        author: args.author,
+        published: args.published,
+        genres: args.genres
+      }
+      books = [...books, newBook]
+
+      return newBook
     }
   }
 }
