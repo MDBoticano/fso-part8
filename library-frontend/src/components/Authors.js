@@ -1,10 +1,16 @@
-import React, { useState } from 'react'
+import React, { /* useState */ } from 'react'
+// import { gql } from 'apollo-boost'
+// import { useApolloClient } from '@apollo/react-hooks'
 
 const Authors = (props) => {
+  // const client = useApolloClient()
   if (!props.show) {
     return null
   }
-  const authors = []
+  if (props.authors.loading) {
+    return <div>loading...</div>
+  }
+  const authors = props.authors.data.allAuthors
 
   return (
     <div>
@@ -29,7 +35,6 @@ const Authors = (props) => {
           )}
         </tbody>
       </table>
-
     </div>
   )
 }
