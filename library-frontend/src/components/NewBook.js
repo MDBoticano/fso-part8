@@ -2,8 +2,8 @@ import React, { useState } from 'react'
 
 const NewBook = (props) => {
   const [title, setTitle] = useState('')
-  const [author, setAuhtor] = useState('')
-  const [published, setPublished] = useState('')
+  const [author, setAuthor] = useState('')
+  const [publishedStr, setPublishedStr] = useState('')
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
 
@@ -13,12 +13,21 @@ const NewBook = (props) => {
 
   const submit = async (e) => {
     e.preventDefault()
+    
+    /* convert published from string to int */
+    let published = -1
+    if (publishedStr === '' ) { published = NaN }
+    else { published = parseInt(publishedStr)}
+
+    await props.addBook({
+      variables: { title, author, published, genres }
+    })
 
     console.log('add book...')
 
     setTitle('')
-    setPublished('')
-    setAuhtor('')
+    setPublishedStr('')
+    setAuthor('')
     setGenres([])
     setGenre('')
   }
@@ -42,15 +51,15 @@ const NewBook = (props) => {
           author
           <input
             value={author}
-            onChange={({ target }) => setAuhtor(target.value)}
+            onChange={({ target }) => setAuthor(target.value)}
           />
         </div>
         <div>
           published
           <input
             type='number'
-            value={published}
-            onChange={({ target }) => setPublished(target.value)}
+            value={publishedStr}
+            onChange={({ target }) => setPublishedStr(target.value)}
           />
         </div>
         <div>
