@@ -79,6 +79,7 @@ const App = () => {
 
       <AuthorForm 
         show={page === 'authors'} 
+        authors={allAuthors}
         editAuthor={editAuthor}
       />
 
