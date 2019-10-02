@@ -6,6 +6,8 @@ require ('dotenv').config()
 
 const JWT_SECRET = process.env.SECRET
 
+let globalIndex = 0
+
 /* Mongoose deprecations */
 mongoose.set('useFindAndModify', false)
 mongoose.set('useNewUrlParser', true)
@@ -38,7 +40,7 @@ const typeDefs = gql`
   type Query {
     bookCount: Int!
     authorCount: Int!
-    allBooks(author: String, genres: [String!]!): [Book!]!
+    allBooks(author: String, genres: [String!]): [Book!]!
     allAuthors: [Author!]!
   }
 
@@ -61,39 +63,45 @@ const resolvers = {
   Query: {
     bookCount: () => Book.collection.countDocuments(),
     authorCount: () => Author.collection.countDocuments(),
-    allBooks: (root, args) => {
-      if (!args.author && !args.genre) { 
-        return Book.find({})
-      } 
-      // else if (args.author && !args.genre) {
-      //   const booksByAuthor = Book.find(author === args.author)
-      //   return booksByAuthor        
-      // }
-      // else if (!args.author && args.genre) {
-      //   const booksByGenre = Book.collection.filter((b) => {
-      //     (b.genres).includes(args.genre)
-      //   })
-      //   return booksByGenre
-      // }
-      // else if (args.author && args.genre) {
-      //   const booksByAuthorInGenre = books.filter(b => 
-      //     b.author === args.author && (b.genres).includes(args.genre))
-      //   return booksByAuthorInGenre
-      // }
-      return Book.find({})
+    allBooks: async (root, args) => {
+      const bookList = await Book.find({})
+        .then((docs) => { return docs.map(async (doc) => {
+          const { title, published, genres, author } = doc 
+
+          /* get name from author id */
+          const authorObj = await Author.findById(author)
+            // .then( (doc) => {
+            //   return {
+            //     name: doc.name,
+            //     born: doc.born,
+            //   }
+            // })
+
+          return {
+            title,
+            published,
+            genres,
+            author: authorObj,
+          }
+        })
+      })
+
+      return bookList
     },
     allAuthors: (root, args) => {
       return Author.find({})
     },
   },
   Author: {
-    bookCount: (root) => {
+    bookCount: async (root) => {
       /* get the ID of the author */
-      const authorId = Author.findOne({ name: root.name })._id
+      const authorId = await Author.findOne({ name: root.name }).then(
+        doc => doc._id
+      )
       if (authorId === null) { return 0 }
 
-      /* count # of books with name matching id */
-      const booksWritten = Book.collection.countDocuments({ name: authorId })
+      const booksWritten = await Book.find({ author: authorId })
+        .then(doc => doc.length)
       return booksWritten
     }
   },
