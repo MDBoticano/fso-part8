@@ -88,71 +88,37 @@ const resolvers = {
   },
   Author: {
     bookCount: (root) => {
-      // const booksWritten = books.filter(b => b.author === root.name)
-      // return booksWritten.length
-      const booksWritten = Book.collection.countDocuments()
+      /* get the ID of the author */
+      const authorId = Author.findOne({ name: root.name })._id
+      if (authorId === null) { return 0 }
+
+      /* count # of books with name matching id */
+      const booksWritten = Book.collection.countDocuments({ name: authorId })
       return booksWritten
     }
   },
   Mutation: {
     addBook: async (root, args) => {
-      
-      // if (!(authors.find(author => author.name === args.author))) {
-      //   const newAuthor = { name: args.author}
-      //   authors = [...authors, newAuthor]
-      // }
+      let bookAuthor = null
+      let authorId = null
 
-      // /* Then add the book to the book list */
-      // const newBook = { 
-      //   title: args.title,
-      //   author: args.author,
-      //   published: args.published,
-      //   genres: args.genres
-      // }
-      // books = [...books, newBook]
+      await Author.findOne({ name: args.author })
+        .then((doc) => {
+          if (doc) {
+            authorId = doc._id
+          }
+        })
 
-      // return newBook
-
-      //  let bookAuthor = null
-      /* If author doesn't exist, and author to authors */
-      // if ( Author.findOne({ name: args.name }) ) {
-      //   console.log('cannot find author')
-      //   const newAuthor = new Author({
-      //     name: args.author
-      //   })
-        
-      //   bookAuthor = await newAuthor.save()
-      // }
-      // else {
-      //   console.log('author exists')
-      //   bookAuthor = Author.findOne({name: args.name})
-      //   console.log(bookAuthor)
-      // }
-
-      /* if args.author isn't the name of any existing Author */
-      // const authorExists = Author.find({ name: args.author }, (error, data) => {
-      //   if (error) { return done(error) }
-      //   return done(null, data)
-      // })
-
-      // /* make a new one */
-      // const bookAuthor = new Author({
-      //   name: args.author
-      // })
-      // await bookAuthor.save()
-
-      /* else use the existing author */
-      // if ( ( await Author.findOne({ name: args.author })) ) {
-      //   console.log('author exists')
-      // }
-
-      /* make author from author arg */
-      const newAuthor = new Author({ name: args.author })
-
-      await newAuthor.save()
+      if (authorId === null) {
+        bookAuthor = new Author({ name: args.author })
+        await bookAuthor.save()  
+      }
+      else {
+        bookAuthor = await Author.findById(authorId)
+      }
 
       const book = new Book({
-       ...args, author: newAuthor
+        ...args, author: bookAuthor
       })
       return book.save()
     },
