@@ -2,7 +2,7 @@ const { ApolloServer, gql, UserInputError } = require('apollo-server')
 const mongoose = require('mongoose')
 const Author = require('./models/author')
 const Book = require('./models/book')
-require ('dotenv').config()
+require('dotenv').config()
 
 const JWT_SECRET = process.env.SECRET
 
@@ -40,7 +40,7 @@ const typeDefs = gql`
   type Query {
     bookCount: Int!
     authorCount: Int!
-    allBooks(author: String, genres: [String!]): [Book!]!
+    allBooks(author: String, genre: [String!]): [Book!]!
     allAuthors: [Author!]!
   }
 
@@ -64,28 +64,47 @@ const resolvers = {
     bookCount: () => Book.collection.countDocuments(),
     authorCount: () => Author.collection.countDocuments(),
     allBooks: async (root, args) => {
-      const bookList = await Book.find({})
-        .then((docs) => { return docs.map(async (doc) => {
-          const { title, published, genres, author } = doc 
+      let bookList = []
 
-          /* get name from author id */
-          const authorObj = await Author.findById(author)
-            // .then( (doc) => {
-            //   return {
-            //     name: doc.name,
-            //     born: doc.born,
-            //   }
-            // })
+      /* No args: ALL books */
+      if (!args.author && !args.genre) {
+        bookList = await Book.find({})
+          .then((docs) => {
+            return docs.map(async (doc) => {
+              const { title, published, genres, author } = doc
 
-          return {
-            title,
-            published,
-            genres,
-            author: authorObj,
-          }
-        })
-      })
+              const authorObj = await Author.findById(author)
 
+              return { title, published, genres, author: authorObj }
+            })
+          })
+        return bookList
+      }
+
+      /* Filter by genres only */
+      if (!args.author && args.genre) {
+        bookList = await Book.find({})
+          .then((docs) => {
+
+            /* remove all books without genre */
+            const filteredDocs = docs.filter(
+              doc => doc.genres.includes(args.genre)
+            )
+
+            return filteredDocs.map(async (doc) => {
+              const { title, published, genres, author } = doc
+
+              const authorObj = await Author.findById(author)
+
+              return { title, published, genres, author: authorObj }
+            })
+          })
+        return bookList
+      }
+
+
+
+      /* default? */
       return bookList
     },
     allAuthors: (root, args) => {
@@ -119,7 +138,7 @@ const resolvers = {
 
       if (authorId === null) {
         bookAuthor = new Author({ name: args.author })
-        await bookAuthor.save()  
+        await bookAuthor.save()
       }
       else {
         bookAuthor = await Author.findById(authorId)
@@ -135,7 +154,7 @@ const resolvers = {
       if (!author) {
         return null
       }
-      const updatedAuthor = {...author, born: args.setBornTo}
+      const updatedAuthor = { ...author, born: args.setBornTo }
       authors = authors.map(a => a.name === args.name ? updatedAuthor : a)
       return updatedAuthor
     }
