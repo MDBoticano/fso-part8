@@ -25,7 +25,8 @@ mongoose.connect(process.env.MONGODB_URI)
 /* Schema */
 const typeDefs = gql`
   type Author {
-    name: String!
+    # name: String!
+    name: String
     born: Int
     bookCount: Int!
   }
@@ -68,21 +69,49 @@ const resolvers = {
 
       /* No args: ALL books */
       if (!args.author && !args.genre) {
+        // console.log('no args')
         bookList = await Book.find({})
-          .then((docs) => {
-            return docs.map(async (doc) => {
-              const { title, published, genres, author } = doc
+          // .then((docs) => {
+          //   return docs.map(async (doc) => {
+          //     const { title, published, genres, author } = doc
 
-              const authorObj = await Author.findById(author)
+          //     const authorObj = await Author.findById(author)
 
-              return { title, published, genres, author: authorObj }
-            })
-          })
+          //     return { title, published, genres, author: authorObj }
+          //   })
+          // })
+        const filteredBookList = bookList.filter( async (book) => {
+          const { author } = book
+          const authorObj = await Author.findById(author)
+          if (authorObj.name !== null) {
+            // console.log('name',authorObj.name)
+            return true
+          } else {
+            return false
+          }
+        })
+
+        filteredBookList.map( async (book) => {
+          const { title, published, genres, author } = book
+          const authorObj = await Author.findById(author)
+          // console.log(authorObj.name)
+          // return { title, published, genres, author: authorObj.name }
+          const returnObj = await {
+            title,
+            published,
+            genres,
+            author: authorObj
+          }
+          console.log(returnObj)
+          // return { ...book, author: authorObj }
+          return returnObj
+        })
         return bookList
       }
 
       /* Filter by genres only */
       if (!args.author && args.genre) {
+        // console.log('filter by genre')
         bookList = await Book.find({})
           .then((docs) => {
 
@@ -96,7 +125,16 @@ const resolvers = {
 
               const authorObj = await Author.findById(author)
 
-              return { title, published, genres, author: authorObj }
+              // return { title, published, genres, author: authorObj }
+              const returnObj = {
+                title,
+                published,
+                genres,
+                author: authorObj
+              }
+              console.log(returnObj)
+              // return { ...book, author: authorObj }
+              return returnObj
             })
           })
         return bookList
@@ -104,6 +142,7 @@ const resolvers = {
 
       /* Filter by author only */
       if (args.author && !args.genre) {
+        // console.log('filter by author')
         /* name --> id */
         const authorId = await Author.findOne({ name: args.author })
           .then(doc => doc._id)
@@ -127,6 +166,7 @@ const resolvers = {
 
       /* filter by author & genre */
       if (args.author && args.genre) {
+        // console.log('filter by author and genre')
         /* name --> id */
         const authorId = await Author.findOne({ name: args.author })
           .then(doc => doc._id)
@@ -149,6 +189,7 @@ const resolvers = {
           })
         return bookList
       }
+      // console.log('default')
       /* default */
       return bookList
     },
@@ -159,14 +200,20 @@ const resolvers = {
   Author: {
     bookCount: async (root) => {
       /* get the ID of the author */
-      const authorId = await Author.findOne({ name: root.name }).then(
-        doc => doc._id
-      )
+      let authorId = null
+      const existingAuthor = await Author.findOne({ name: root.name })
+      if (existingAuthor !== null && existingAuthor._id !== null) {
+        authorId = existingAuthor._id
+      }
+      
       if (authorId === null) { return 0 }
 
       const booksWritten = await Book.find({ author: authorId })
-        .then(doc => doc.length)
-      return booksWritten
+      let booksWrittenLength = 0
+      if (booksWritten !== null && booksWritten.length) {
+        booksWrittenLength = booksWritten.length
+      }
+      return booksWrittenLength
     }
   },
   Mutation: {
@@ -174,19 +221,12 @@ const resolvers = {
       let bookAuthor = null
       let authorId = null
 
-      // await Author.findOne({ name: args.author })
-      //   .then((doc) => {
-      //     if (doc) {
-      //       authorId = doc._id
-      //     }
-      //   })
-
       const existingAuthor = await Author.findOne({ name: args.author })
       if (existingAuthor !== null && existingAuthor._id !== null) {
         authorId = existingAuthor._id
       }
-      console.log('author id', authorId)
 
+      /* Note: This will add the author if it's valid, even if the book isn't */
       if (authorId === null) {
         try {
           bookAuthor = new Author({ name: args.author })
