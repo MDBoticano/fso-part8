@@ -116,7 +116,9 @@ const resolvers = {
     allAuthors: (root, args) => {
       return Author.find({})
     },
-    me: (root, args, { currentUser }) => currentUser
+    me: (root, args, context) => {
+      return context.currentUser
+    }
   },
   Author: {
     bookCount: async (root) => {
@@ -185,10 +187,10 @@ const resolvers = {
       return author.save()
     },
     createUser: (root, args) => {
-      const user = new User({ 
+      const user = new User({
         username: args.username,
         favoriteGenre: args.favoriteGenre
-       })
+      })
 
       return user.save()
         .catch((error) => {
@@ -209,7 +211,7 @@ const resolvers = {
         id: user._id
       }
 
-      return { value: jwt.sign(userForToken, JWT_SECRET)}
+      return { value: jwt.sign(userForToken, JWT_SECRET) }
     }
   }
 }
@@ -242,7 +244,7 @@ const server = new ApolloServer({
       const currentUser = await User.findById(decodedToken.id)
       return { currentUser }
     }
-  }
+  },
 })
 
 server.listen().then(({ url }) => {
