@@ -70,124 +70,74 @@ const resolvers = {
       /* No args: ALL books */
       if (!args.author && !args.genre) {
         const allBooks = await Book.find({})
-        
-        bookList = allBooks.map( book => {
+
+        bookList = allBooks.map(book => {
           const { title, published, genres, author } = book
           return {
-            title, published, genres, 
+            title, published, genres,
             author: Author.findById(author)
           }
         })
 
-        // const filteredBookList = bookList.filter( async (book) => {
-        //   const { author } = book
-        //   const authorObj = await Author.findById(author)
-        //   if (authorObj.name !== null) {
-        //     return true
-        //   } else {
-        //     return false
-        //   }
-        // })
-
-        // bookList = filteredBookList.map( async (book) => {
-        //   const { title, published, genres, author } = book
-        //   const authorObj = await Author.findById(author)
-        //   // console.log(authorObj.name)
-        //   // return { title, published, genres, author: authorObj.name }
-        //   const returnObj = {
-        //     title,
-        //     published,
-        //     genres,
-        //     author: await Author.findById(author)
-        //   }
-        //   console.log(returnObj)
-        //   // return { ...book, author: authorObj }
-        //   return returnObj
-        // })
         return bookList
       }
 
       /* Filter by genres only */
-      if (!args.author && args.genre) {
-        // console.log('filter by genre')
-        bookList = await Book.find({})
-          .then((docs) => {
+      else if (!args.author && args.genre) {
+        const allBooks = await Book.find({ genres: { $in: [args.genre] } })
 
-            /* remove all books without genre */
-            const filteredDocs = docs.filter(
-              doc => doc.genres.includes(args.genre)
-            )
-
-            return filteredDocs.map(async (doc) => {
-              const { title, published, genres, author } = doc
-
-              const authorObj = await Author.findById(author)
-
-              // return { title, published, genres, author: authorObj }
-              const returnObj = {
-                title,
-                published,
-                genres,
-                author: authorObj
-              }
-              console.log(returnObj)
-              // return { ...book, author: authorObj }
-              return returnObj
-            })
-          })
+        bookList = allBooks.map(book => {
+          const { title, published, genres, author } = book
+          return {
+            title, published, genres,
+            author: Author.findById(author)
+          }
+        })
+        
         return bookList
       }
 
       /* Filter by author only */
       if (args.author && !args.genre) {
-        // console.log('filter by author')
-        /* name --> id */
-        const authorId = await Author.findOne({ name: args.author })
-          .then(doc => doc._id)
+        /* convert name into author id */
+        const authorByName = await Author.findOne({ name: args.author })
+        if (authorByName === null ) { return bookList }
+        const authorId = authorByName._id
 
-        bookList = await Book.find({})
-          .then((docs) => {
-            const filteredDocs = docs.filter(
-              doc => doc.author.toString() === authorId.toString()
-            )
+        const allBooks = await Book.find({ author: { $in: [authorId] } })
 
-            return filteredDocs.map(async (doc) => {
-              const { title, published, genres, author } = doc
-
-              const authorObj = await Author.findById(author)
-
-              return { title, published, genres, author: authorObj }
-            })
-          })
+        bookList = allBooks.map(book => {
+          const { title, published, genres, author } = book
+          return {
+            title, published, genres,
+            author: Author.findById(author)
+          }
+        })
+        
         return bookList
       }
 
       /* filter by author & genre */
       if (args.author && args.genre) {
-        // console.log('filter by author and genre')
-        /* name --> id */
-        const authorId = await Author.findOne({ name: args.author })
-          .then(doc => doc._id)
-
-        bookList = await Book.find({})
-          .then((docs) => {
-            const filteredDocs = docs.filter(
-              doc => (
-                doc.author.toString() === authorId.toString() &&
-                doc.genres.includes(args.genre)
-              ))
-
-            return filteredDocs.map(async (doc) => {
-              const { title, published, genres, author } = doc
-
-              const authorObj = await Author.findById(author)
-
-              return { title, published, genres, author: authorObj }
-            })
-          })
-        return bookList
+         /* convert name into author id */
+         const authorByName = await Author.findOne({ name: args.author })
+         if (authorByName === null ) { return bookList }
+         const authorId = authorByName._id
+ 
+         const allBooks = await Book.find({ 
+          author: { $in: [authorId] }, 
+          genres: { $in: [args.genre] }
+        })
+ 
+         bookList = allBooks.map(book => {
+           const { title, published, genres, author } = book
+           return {
+             title, published, genres,
+             author: Author.findById(author)
+           }
+         })
+         return bookList
       }
-      // console.log('default')
       /* default */
       return bookList
     },
@@ -203,7 +153,7 @@ const resolvers = {
       if (existingAuthor !== null && existingAuthor._id !== null) {
         authorId = existingAuthor._id
       }
-      
+
       if (authorId === null) { return 0 }
 
       const booksWritten = await Book.find({ author: authorId })
@@ -235,7 +185,7 @@ const resolvers = {
             invalid: args,
           })
         }
-       
+
       }
       else {
         bookAuthor = await Author.findById(authorId)
@@ -244,7 +194,7 @@ const resolvers = {
       const book = new Book({
         ...args, author: bookAuthor
       })
-      
+
       try {
         await book.save()
       }
