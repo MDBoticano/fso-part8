@@ -6,8 +6,6 @@ require('dotenv').config()
 
 const JWT_SECRET = process.env.SECRET
 
-let globalIndex = 0
-
 /* Mongoose deprecations */
 mongoose.set('useFindAndModify', false)
 mongoose.set('useNewUrlParser', true)
@@ -65,81 +63,35 @@ const resolvers = {
     bookCount: () => Book.collection.countDocuments(),
     authorCount: () => Author.collection.countDocuments(),
     allBooks: async (root, args) => {
-      let bookList = []
-
       /* No args: ALL books */
       if (!args.author && !args.genre) {
         const allBooks = await Book.find({})
-
-        bookList = allBooks.map(book => {
-          const { title, published, genres, author } = book
-          return {
-            title, published, genres,
-            author: Author.findById(author)
-          }
-        })
-
-        return bookList
+        return getAuthorDetails(allBooks)
       }
 
       /* Filter by genres only */
       else if (!args.author && args.genre) {
         const allBooks = await Book.find({ genres: { $in: [args.genre] } })
-
-        bookList = allBooks.map(book => {
-          const { title, published, genres, author } = book
-          return {
-            title, published, genres,
-            author: Author.findById(author)
-          }
-        })
-        
-        return bookList
+        return getAuthorDetails(allBooks)
       }
 
       /* Filter by author only */
-      if (args.author && !args.genre) {
-        /* convert name into author id */
-        const authorByName = await Author.findOne({ name: args.author })
-        if (authorByName === null ) { return bookList }
-        const authorId = authorByName._id
-
+      else if (args.author && !args.genre) {
+        const authorId = await authorNameToId(args.author)
         const allBooks = await Book.find({ author: { $in: [authorId] } })
-
-        bookList = allBooks.map(book => {
-          const { title, published, genres, author } = book
-          return {
-            title, published, genres,
-            author: Author.findById(author)
-          }
-        })
-        
-        return bookList
+        return getAuthorDetails(allBooks)
       }
 
       /* filter by author & genre */
-      if (args.author && args.genre) {
-         /* convert name into author id */
-         const authorByName = await Author.findOne({ name: args.author })
-         if (authorByName === null ) { return bookList }
-         const authorId = authorByName._id
- 
-         const allBooks = await Book.find({ 
-          author: { $in: [authorId] }, 
+      else if (args.author && args.genre) {
+        const authorId = await authorNameToId(args.author)
+        const allBooks = await Book.find({
+          author: { $in: [authorId] },
           genres: { $in: [args.genre] }
         })
- 
-         bookList = allBooks.map(book => {
-           const { title, published, genres, author } = book
-           return {
-             title, published, genres,
-             author: Author.findById(author)
-           }
-         })
-         return bookList
+        return getAuthorDetails(allBooks)
       }
-      /* default */
-      return bookList
+      return []
     },
     allAuthors: (root, args) => {
       return Author.find({})
@@ -212,6 +164,23 @@ const resolvers = {
       return author.save()
     }
   }
+}
+
+/* Helper functions */
+const authorNameToId = async (name) => {
+  const authorByName = await Author.findOne({ name: name })
+  if (authorByName === null) { return null }
+  else { return authorByName._id }
+}
+
+const getAuthorDetails = (booklist) => {
+  return booklist.map(book => {
+    const { title, published, genres, author } = book
+    return {
+      title, published, genres,
+      author: Author.findById(author)
+    }
+  })
 }
 
 const server = new ApolloServer({
