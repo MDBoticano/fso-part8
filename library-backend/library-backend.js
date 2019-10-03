@@ -174,16 +174,30 @@ const resolvers = {
       let bookAuthor = null
       let authorId = null
 
-      await Author.findOne({ name: args.author })
-        .then((doc) => {
-          if (doc) {
-            authorId = doc._id
-          }
-        })
+      // await Author.findOne({ name: args.author })
+      //   .then((doc) => {
+      //     if (doc) {
+      //       authorId = doc._id
+      //     }
+      //   })
+
+      const existingAuthor = await Author.findOne({ name: args.author })
+      if (existingAuthor !== null && existingAuthor._id !== null) {
+        authorId = existingAuthor._id
+      }
+      console.log('author id', authorId)
 
       if (authorId === null) {
-        bookAuthor = new Author({ name: args.author })
-        await bookAuthor.save()
+        try {
+          bookAuthor = new Author({ name: args.author })
+          await bookAuthor.save()
+        }
+        catch (error) {
+          throw new UserInputError(error.message, {
+            invalid: args,
+          })
+        }
+       
       }
       else {
         bookAuthor = await Author.findById(authorId)
@@ -192,7 +206,17 @@ const resolvers = {
       const book = new Book({
         ...args, author: bookAuthor
       })
-      return book.save()
+      
+      try {
+        await book.save()
+      }
+      catch (error) {
+        throw new UserInputError(error.message, {
+          invalid: args,
+        })
+      }
+
+      return book
     },
     editAuthor: async (root, args) => {
       const author = await Author.findOne({ name: args.name })
