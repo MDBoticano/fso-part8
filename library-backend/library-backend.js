@@ -102,9 +102,54 @@ const resolvers = {
         return bookList
       }
 
+      /* Filter by author only */
+      if (args.author && !args.genre) {
+        /* name --> id */
+        const authorId = await Author.findOne({ name: args.author })
+          .then(doc => doc._id)
 
+        bookList = await Book.find({})
+          .then((docs) => {
+            const filteredDocs = docs.filter(
+              doc => doc.author.toString() === authorId.toString()
+            )
 
-      /* default? */
+            return filteredDocs.map(async (doc) => {
+              const { title, published, genres, author } = doc
+
+              const authorObj = await Author.findById(author)
+
+              return { title, published, genres, author: authorObj }
+            })
+          })
+        return bookList
+      }
+
+      /* filter by author & genre */
+      if (args.author && args.genre) {
+        /* name --> id */
+        const authorId = await Author.findOne({ name: args.author })
+          .then(doc => doc._id)
+
+        bookList = await Book.find({})
+          .then((docs) => {
+            const filteredDocs = docs.filter(
+              doc => (
+                doc.author.toString() === authorId.toString() &&
+                doc.genres.includes(args.genre)
+              ))
+
+            return filteredDocs.map(async (doc) => {
+              const { title, published, genres, author } = doc
+
+              const authorObj = await Author.findById(author)
+
+              return { title, published, genres, author: authorObj }
+            })
+          })
+        return bookList
+      }
+      /* default */
       return bookList
     },
     allAuthors: (root, args) => {
