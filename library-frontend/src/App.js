@@ -1,10 +1,19 @@
 import React, { useState } from 'react'
-import { useQuery, useMutation } from '@apollo/react-hooks'
+import { useQuery, useMutation, useApolloClient } from '@apollo/react-hooks'
 import { gql } from 'apollo-boost'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import AuthorForm from './components/AuthorForm'
+import LoginForm from './components/LoginForm'
+
+const LOGIN = gql`
+mutation login($username: String!, $password: String!) { 
+  login(username: $username, password: $password){
+    value
+  }
+}
+`
 
 const ALL_AUTHORS = gql`
 {
@@ -55,6 +64,18 @@ mutation editAuthor( $name: String!, $born: Int) {
 `
 
 const App = () => {
+  const [token, setToken] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
+
+  const client = useApolloClient()
+
+  const handleError = (error) => {
+    setErrorMessage(error.graphQLErrors[0].message)
+    setTimeout(() => {
+      setErrorMessage(null)
+    }, 10000)
+  }
+
   const allAuthors = useQuery(ALL_AUTHORS)
   const allBooks = useQuery(ALL_BOOKS)
 
@@ -68,13 +89,44 @@ const App = () => {
 
   const [page, setPage] = useState('authors')
 
+  const [login] = useMutation(LOGIN, {
+    onError: handleError
+  })
+
+  const errorNotification = () => {
+    return (
+      errorMessage &&
+      <div style={{ color: 'red' }}>
+        {errorMessage}
+      </div>
+    )
+  }
+
+  const logout = () => {
+    setToken(null)
+    localStorage.clear()
+    client.resetStore()
+  }
+
+  if(!token){
+    return (
+      <div>
+        {errorNotification()}
+        <LoginForm login={login} setToken={(token) => setToken(token)} />
+      </div>
+    )
+  }
+
   return (
     <div>
       <div>
         <button onClick={() => setPage('authors')}>authors</button>
         <button onClick={() => setPage('books')}>books</button>
         <button onClick={() => setPage('add')}>add book</button>
+        <button onClick={logout}>logout</button>
       </div>
+
+      {errorNotification()}
 
       <Authors
         show={page === 'authors'}
