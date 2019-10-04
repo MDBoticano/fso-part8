@@ -15,12 +15,14 @@ const NewBook = (props) => {
     e.preventDefault()
     
     /* convert published from string to int */
-    let published = -1
-    if (publishedStr === '' ) { published = NaN }
-    else { published = parseInt(publishedStr)}
+    // let published = -1
+    // if (publishedStr === '' ) { published = NaN }
+    // else { published = parseInt(publishedStr)}
 
     await props.addBook({
-      variables: { title, author, published, genres }
+      variables: { title, author, genres,
+        published: publishedStr === '' ? NaN : parseInt(publishedStr)
+      }
     })
 
     console.log('add book...')
