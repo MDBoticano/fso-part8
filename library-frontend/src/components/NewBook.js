@@ -13,12 +13,6 @@ const NewBook = (props) => {
 
   const submit = async (e) => {
     e.preventDefault()
-    
-    /* convert published from string to int */
-    // let published = -1
-    // if (publishedStr === '' ) { published = NaN }
-    // else { published = parseInt(publishedStr)}
-
     await props.addBook({
       variables: { title, author, genres,
         published: publishedStr === '' ? NaN : parseInt(publishedStr)
@@ -35,8 +29,10 @@ const NewBook = (props) => {
   }
 
   const addGenre = () => {
-    setGenres(genres.concat(genre))
-    setGenre('')
+    if(genre !== '') {
+      setGenres(genres.concat(genre))
+      setGenre('')
+    }
   }
 
   return (
