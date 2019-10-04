@@ -1,17 +1,30 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 const Books = (props) => {
   const [genresToShow, setGenresToShow] = useState('')
+  useEffect(() => {
+    if (props.myInfo && !props.myInfo.loading) {
+      if (props.myInfo.data.me) {
+        const userFavGenre = props.myInfo.data.me.favoriteGenre
+        setGenresToShow(userFavGenre)
+      } else {
+        setGenresToShow('')
+      }
+    }
+  }, [props.myInfo])
 
   if (!props.show) {
     return null
   }
 
-  if (props.books.loading) {
+  if (props.books.loading || (props.myInfo && props.myInfo.loading)) {
     return <div>loading...</div>
   }
 
   const books = props.books.data.allBooks
+
+
+
 
   const genresList = []
   /* go through all boooks */
@@ -27,27 +40,45 @@ const Books = (props) => {
   }
 
   const genreButtons = (genresList) => {
+    if (props.myInfo) {
+      return (
+        <div>
+          <p>Filtering by your favorite genre: {genresToShow}</p>
+        </div>
+      )
+    }
+
     return (
       <div>
-        {genresList.map(genre => {
-          return (
-            <button
-              key={genre}
-              onClick={() => setGenresToShow(genre)}
-            >
-              {genre}
-            </button>
-          )
-        })}
-        <button onClick={() => setGenresToShow('')}>all genres</button>
+        <p>Filter by genres:</p>
+        <div>
+          {genresList.map(genre => {
+            return (
+              <button
+                key={genre}
+                onClick={() => setGenresToShow(genre)}
+              >
+                {genre}
+              </button>
+            )
+          })}
+          <button onClick={() => setGenresToShow('')}>all genres</button>
+        </div>
       </div>
     )
   }
 
+  const pageTitle = () => {
+    if (props.myInfo) {
+      return <h2>recommended books </h2>
+    } else {
+      return <h2>books</h2>
+    }
+  }
+
   return (
     <div>
-      <h2>books</h2>
-      <p>Filter by genres:</p>
+      {pageTitle()}
       {genreButtons(genresList)}
       <table>
         <tbody>

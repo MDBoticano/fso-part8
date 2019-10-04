@@ -67,6 +67,15 @@ mutation editAuthor( $name: String!, $born: Int) {
 }
 `
 
+const MY_INFO = gql`
+{
+  me {
+    username
+    favoriteGenre
+  }
+}
+`
+
 const App = () => {
   const [token, setToken] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
@@ -82,6 +91,7 @@ const App = () => {
 
   const allAuthors = useQuery(ALL_AUTHORS)
   const allBooks = useQuery(ALL_BOOKS)
+  const myInfo = useQuery(MY_INFO)
 
   const [addBook] = useMutation(ADD_BOOK, {
     refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }]
@@ -94,7 +104,8 @@ const App = () => {
   const [page, setPage] = useState('authors')
 
   const [login] = useMutation(LOGIN, {
-    onError: handleError
+    onError: handleError,
+    refetchQueries: [{ query: MY_INFO }]
   })
 
   const errorNotification = () => {
@@ -108,6 +119,7 @@ const App = () => {
 
   const logout = () => {
     setToken(null)
+    setPage('authors')
     localStorage.clear()
     client.resetStore()
   }
@@ -126,6 +138,7 @@ const App = () => {
       <div>
         <button onClick={() => setPage('authors')}>authors</button>
         <button onClick={() => setPage('books')}>books</button>
+        <button onClick={() => setPage('recommended')}>recommended</button>
         <button onClick={() => setPage('add')}>add book</button>
         <button onClick={logout}>logout</button>
       </div>
@@ -151,6 +164,12 @@ const App = () => {
       <NewBook
         show={page === 'add'}
         addBook={addBook}
+      />
+
+      <Books
+        show={page === 'recommended'}
+        books={allBooks}
+        myInfo={myInfo}
       />
 
     </div>
