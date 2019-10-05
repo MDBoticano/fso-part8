@@ -104,8 +104,8 @@ const App = () => {
   const [page, setPage] = useState('authors')
 
   const [login] = useMutation(LOGIN, {
-    onError: handleError,
-    refetchQueries: [{ query: MY_INFO }]
+    refetchQueries: [{ query: MY_INFO }],
+    onError: handleError
   })
 
   const errorNotification = () => {
@@ -120,7 +120,7 @@ const App = () => {
   const logout = () => {
     setToken(null)
     setPage('authors')
-    localStorage.clear()
+    // localStorage.clear()
     client.resetStore()
   }
 

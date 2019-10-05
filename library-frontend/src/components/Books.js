@@ -2,12 +2,21 @@ import React, { useState, useEffect } from 'react'
 
 const Books = (props) => {
   const [genresToShow, setGenresToShow] = useState('')
+  const [userFavGenre, setUserFavGenre] = useState('')
+  const [username ,setUsername] = useState('')
+
   useEffect(() => {
     if (props.myInfo && !props.myInfo.loading) {
-      if (props.myInfo.data.me) {
-        const userFavGenre = props.myInfo.data.me.favoriteGenre
+      console.log('page is recommended')
+      if (props.myInfo.data.me && (props.myInfo.data.me.favoriteGenre !== '')) {
+        console.log('user has a fav genre')
+        setUserFavGenre(props.myInfo.data.me.favoriteGenre)
+        setUsername(props.myInfo.data.me.username)
+        console.log('recommended is set')
         setGenresToShow(userFavGenre)
       } else {
+        console.log('user does not have a favorite genre')
+        console.log(props.myInfo.data.me)
         setGenresToShow('')
       }
     }
@@ -22,9 +31,6 @@ const Books = (props) => {
   }
 
   const books = props.books.data.allBooks
-
-
-
 
   const genresList = []
   /* go through all boooks */
@@ -43,7 +49,7 @@ const Books = (props) => {
     if (props.myInfo) {
       return (
         <div>
-          <p>Filtering by your favorite genre: {genresToShow}</p>
+          <p>Filtering by {username}'s favorite genre: {userFavGenre}</p>
         </div>
       )
     }
