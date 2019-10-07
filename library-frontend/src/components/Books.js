@@ -15,6 +15,12 @@ const Books = (props) => {
         setUsername(props.myInfo.data.me.username)
         // console.log('recommended is set')
         setGenresToShow(props.myInfo.data.me.favoriteGenre)
+      } else if (props.myInfo.data.me && (props.myInfo.data.me.favoriteGenre === '')) {
+        // console.log('user exists but does not have a fav genre')
+        setUserFavGenre('')
+        setUsername(props.myInfo.data.me.username)
+        // console.log('recommended is set')
+        setGenresToShow('')
       } else {
         // console.log('user does not have a favorite genre')
         // console.log(props.myInfo.data.me)
@@ -48,11 +54,18 @@ const Books = (props) => {
 
   const genreButtons = (genresList) => {
     if (props.myInfo) {
+      if (username !== '' && userFavGenre !== '') {
       return (
         <div>
           <p>Filtering by {username}'s favorite genre: {userFavGenre}</p>
         </div>
-      )
+      )}
+      if (username !== '' && userFavGenre === '') {
+      return (
+        <div>
+          <p>{username} has no favorite genre. Here's all the books.</p>
+      </div>
+      )}
     }
 
     return (
