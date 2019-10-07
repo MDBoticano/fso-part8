@@ -12,6 +12,7 @@ import { LOGIN, ALL_AUTHORS, ALL_BOOKS, ADD_BOOK, EDIT_AUTHOR, MY_INFO
 const App = () => {
   const [token, setToken] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
+  const [page, setPage] = useState('authors') /* default page */
 
   const client = useApolloClient()
 
@@ -25,7 +26,7 @@ const App = () => {
   const allAuthors = useQuery(ALL_AUTHORS)
   const allBooks = useQuery(ALL_BOOKS)
   const myInfo = useQuery(MY_INFO, {
-    pollInterval: 1000,
+    pollInterval: 1000
   })
 
   const [addBook] = useMutation(ADD_BOOK, {
@@ -33,13 +34,10 @@ const App = () => {
   })
 
   const [editAuthor] = useMutation(EDIT_AUTHOR, {
-    refetchQueries: [{ query: ALL_AUTHORS }]
+    refetchQueries: [{ query: ALL_AUTHORS }],
   })
 
-  const [page, setPage] = useState('authors')
-
   const [login] = useMutation(LOGIN, {
-    refetchQueries: [{ query: MY_INFO }],
     onError: handleError
   })
 
@@ -56,6 +54,12 @@ const App = () => {
         <Notification errorMessage={errorMessage} />
         <LoginForm login={login} setToken={(token) => setToken(token)} />
       </div>
+    )
+  }
+
+  if(token && myInfo.data.me === null) {
+    return (
+      <div>loading...</div>
     )
   }
 

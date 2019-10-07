@@ -6,22 +6,22 @@ const Books = (props) => {
   const [username ,setUsername] = useState('')
 
   useEffect(() => {
-    if (props.myInfo && !props.myInfo.loading) {
-      console.log('page is recommended')
-      console.log(props.myInfo.data)
+    if (props.show && props.myInfo && !props.myInfo.loading) {
+      // console.log('page is recommended')
+      // console.log(props.myInfo.data)
       if (props.myInfo.data.me && (props.myInfo.data.me.favoriteGenre !== '')) {
-        console.log('user has a fav genre')
+        // console.log('user has a fav genre')
         setUserFavGenre(props.myInfo.data.me.favoriteGenre)
         setUsername(props.myInfo.data.me.username)
-        console.log('recommended is set')
+        // console.log('recommended is set')
         setGenresToShow(props.myInfo.data.me.favoriteGenre)
       } else {
-        console.log('user does not have a favorite genre')
-        console.log(props.myInfo.data.me)
+        // console.log('user does not have a favorite genre')
+        // console.log(props.myInfo.data.me)
         setGenresToShow('')
       }
     }
-  }, [props.myInfo])
+  }, [props.myInfo, props.show])
 
   if (!props.show) {
     return null
