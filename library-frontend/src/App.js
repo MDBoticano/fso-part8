@@ -24,7 +24,9 @@ const App = () => {
 
   const allAuthors = useQuery(ALL_AUTHORS)
   const allBooks = useQuery(ALL_BOOKS)
-  const myInfo = useQuery(MY_INFO)
+  const myInfo = useQuery(MY_INFO, {
+    pollInterval: 1000,
+  })
 
   const [addBook] = useMutation(ADD_BOOK, {
     refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }]
@@ -60,7 +62,7 @@ const App = () => {
   return (
     <div>
       <div>
-        User: {myInfo.data.me && myInfo.data.me.username}
+        Hello {myInfo.data.me && myInfo.data.me.username}
       </div>
 
       <div>
@@ -98,6 +100,7 @@ const App = () => {
         show={page === 'recommended'}
         books={allBooks}
         myInfo={myInfo}
+        defaultFilter={myInfo.data.me && myInfo.data.me.favoriteGenre}
       />
 
     </div>

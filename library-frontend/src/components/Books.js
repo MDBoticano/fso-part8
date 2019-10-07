@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 
 const Books = (props) => {
-  const [genresToShow, setGenresToShow] = useState('')
+  const [genresToShow, setGenresToShow] = useState(props.defaultFilter || '')
   const [userFavGenre, setUserFavGenre] = useState('')
   const [username ,setUsername] = useState('')
 
