@@ -90,7 +90,9 @@ const Books = (props) => {
       <table>
         <tbody>
           <tr>
-            <th></th>
+            <th>
+              title
+            </th>
             <th>
               author
             </th>
