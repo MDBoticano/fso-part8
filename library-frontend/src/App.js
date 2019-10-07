@@ -1,80 +1,13 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useApolloClient } from '@apollo/react-hooks'
-import { gql } from 'apollo-boost'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import AuthorForm from './components/AuthorForm'
 import LoginForm from './components/LoginForm'
-
-const LOGIN = gql`
-mutation login($username: String!, $password: String!) { 
-  login(username: $username, password: $password){
-    value
-  }
-}
-`
-
-const ALL_AUTHORS = gql`
-{
-  allAuthors {
-    name
-    born
-    bookCount
-  }
-}
-`
-
-const ALL_BOOKS = gql`
-{
-  allBooks {
-    title
-    author {
-      name
-      born
-      bookCount
-    }
-    published
-    genres
-  }
-}
-`
-
-const ADD_BOOK = gql`
-mutation addBook ( $title: String!, $author: String!, $published: Int, 
-  $genres: [String!]! ) {
-  addBook( title: $title, author: $author, published: $published, 
-    genres: $genres) {
-    title
-    author {
-      name
-      born
-      bookCount
-    }
-    published
-    genres
-  }
-}
-`
-
-const EDIT_AUTHOR = gql`
-mutation editAuthor( $name: String!, $born: Int) {
-  editAuthor( name: $name, setBornTo: $born ) {
-    name
-    born
-    bookCount
-  }
-}
-`
-
-const MY_INFO = gql`
-{
-  me {
-    username
-    favoriteGenre
-  }
-}
-`
+import Notification from './components/Notification'
+import { LOGIN, ALL_AUTHORS, ALL_BOOKS, ADD_BOOK, EDIT_AUTHOR, MY_INFO 
+} from './gql/queries'
 
 const App = () => {
   const [token, setToken] = useState(null)
@@ -108,15 +41,6 @@ const App = () => {
     onError: handleError
   })
 
-  const errorNotification = () => {
-    return (
-      errorMessage &&
-      <div style={{ color: 'red' }}>
-        {errorMessage}
-      </div>
-    )
-  }
-
   const logout = () => {
     setToken(null)
     setPage('authors')
@@ -124,17 +48,10 @@ const App = () => {
     client.resetStore()
   }
 
-  if(myInfo.loading) {
-    console.log('loading user info...')
-    return (
-      <div>loading...</div>
-    )
-  }
-
   if(!token){
     return (
       <div>
-        {errorNotification()}
+        <Notification errorMessage={errorMessage} />
         <LoginForm login={login} setToken={(token) => setToken(token)} />
       </div>
     )
@@ -142,12 +59,9 @@ const App = () => {
 
   return (
     <div>
-      {/* <div>
-        User Info
-        {console.log(myInfo)}
-        {myInfo.data.me.username}
-      </div> */}
-
+      <div>
+        User: {myInfo.data.me && myInfo.data.me.username}
+      </div>
 
       <div>
         <button onClick={() => setPage('authors')}>authors</button>
@@ -157,7 +71,7 @@ const App = () => {
         <button onClick={logout}>logout</button>
       </div>
 
-      {errorNotification()}
+      <Notification errorMessage={errorMessage} />
 
       <Authors
         show={page === 'authors'}
