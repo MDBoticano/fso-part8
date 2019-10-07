@@ -8,12 +8,13 @@ const Books = (props) => {
   useEffect(() => {
     if (props.myInfo && !props.myInfo.loading) {
       console.log('page is recommended')
+      console.log(props.myInfo.data)
       if (props.myInfo.data.me && (props.myInfo.data.me.favoriteGenre !== '')) {
         console.log('user has a fav genre')
         setUserFavGenre(props.myInfo.data.me.favoriteGenre)
         setUsername(props.myInfo.data.me.username)
         console.log('recommended is set')
-        setGenresToShow(userFavGenre)
+        setGenresToShow(props.myInfo.data.me.favoriteGenre)
       } else {
         console.log('user does not have a favorite genre')
         console.log(props.myInfo.data.me)
@@ -114,6 +115,9 @@ const Books = (props) => {
                   </td>
                 </tr>
               )
+            }
+            else {
+              return null
             }
           })}
         </tbody>

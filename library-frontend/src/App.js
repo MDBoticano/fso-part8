@@ -120,8 +120,15 @@ const App = () => {
   const logout = () => {
     setToken(null)
     setPage('authors')
-    // localStorage.clear()
+    localStorage.clear()
     client.resetStore()
+  }
+
+  if(myInfo.loading) {
+    console.log('loading user info...')
+    return (
+      <div>loading...</div>
+    )
   }
 
   if(!token){
@@ -135,6 +142,13 @@ const App = () => {
 
   return (
     <div>
+      {/* <div>
+        User Info
+        {console.log(myInfo)}
+        {myInfo.data.me.username}
+      </div> */}
+
+
       <div>
         <button onClick={() => setPage('authors')}>authors</button>
         <button onClick={() => setPage('books')}>books</button>
