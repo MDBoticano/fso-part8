@@ -18,7 +18,7 @@ const Books = (props) => {
   }
 
   const books = props.books.data.allBooks
-  console.log(props.page, books)
+  // console.log(props.page, books)
   const genresList = props.genresList
 
   const genreButtons = (genresList) => {

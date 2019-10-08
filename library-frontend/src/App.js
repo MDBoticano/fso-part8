@@ -102,7 +102,8 @@ const App = () => {
         const result = await client.query({
           query: FILTERED_BOOKS,
           variables: { genre },
-          fetchPolicy: "no-cache"
+          // fetchPolicy: "no-cache"
+          fetchPolicy: "network-only"
         })
         setFilteredBooks(result)
       }
@@ -123,7 +124,8 @@ const App = () => {
         const result = await client.query({
           query: FILTERED_BOOKS,
           variables: { genre },
-          fetchPolicy: "no-cache"
+          // fetchPolicy: "no-cache"
+          fetchPolicy: "network-only"
         })
         setRecommendedBooks(result)
       }
