@@ -34,15 +34,15 @@ query allBooks ($genre: [String!]) {
 //   return data
 // }
 
-const GetFilteredBooks = async (genre, client) => {
-  const { loading, data } = await client.query({
-    query: FILTERED_BOOKS,
-    variables: { genre }
-  })
-  if (loading) { return "loading..." }
-  console.log('filtered books data:', data)
-  return data
-}
+// const GetFilteredBooks = async (genre, client) => {
+//   const { loading, data } = await client.query({
+//     query: FILTERED_BOOKS,
+//     variables: { genre }
+//   })
+//   if (loading) { return "loading..." }
+//   console.log('filtered books data:', data)
+//   return data
+// }
 
 const App = () => {
   const [token, setToken] = useState(null)
@@ -50,7 +50,9 @@ const App = () => {
   const [page, setPage] = useState('authors') /* default page */
   const [genreFilter, setGenreFilter] = useState('')
   const [filteredBooks, setFilteredBooks] = useState(null)
-  const [genresList, setGenresList] = useState([])
+  // const [genresList, setGenresList] = useState([])
+  const [recommendedBooks, setRecommendedBooks] = useState(null)
+  const [recommendedGenre, setRecommendedGenre] = useState('')
 
   const client = useApolloClient()
 
@@ -64,39 +66,13 @@ const App = () => {
   const allAuthors = useQuery(ALL_AUTHORS)
   const allBooks = useQuery(ALL_BOOKS)
 
+  /* For book list */
   useEffect(() => {
     /* If there's no filter, just show allBooks */
     if (genreFilter === '') {
-      console.log('no filter, use all books')
       setFilteredBooks(allBooks)
     }
     else {
-      /* Otherwise: query the filtered list of books */
-      // const filtered =  (genreFilter, client) => {
-      //   const result =  GetFilteredBooks(genreFilter, client)
-      //   return result
-      // }
-
-      // // const filteredAsync = filtered(genreFilter, client)
-
-      // // console.log('useEffect', filteredAsync)
-
-      // // const filteredAllBooks = () => {
-      // //   if (filteredAsync.data && filteredAsync.data.allBooks) {
-      // //     return filteredAsync.data.allBooks
-      // //   }
-      // // }
-      // // setFilteredBooks({ data: { allBooks: filteredAllBooks() } })
-      // setFilteredBooks({ data: { allBooks: filtered(genreFilter, client) } })
-      const GetFilteredBooks = async (genre, client) => {
-        const { loading, data } = await client.query({
-          query: FILTERED_BOOKS,
-          variables: { genre }
-        })
-        if (loading) { return "loading..." }
-        console.log('filtered books data:', data)
-        return data
-      }
       const getFiltered = async (genre, client) => {
         const result = await client.query({
           query: FILTERED_BOOKS,
@@ -106,9 +82,31 @@ const App = () => {
       }
       getFiltered(genreFilter, client)
     }
-  }, [genreFilter, client, allBooks])
+  }, [token, genreFilter, client, allBooks])
 
-  console.log('outside useEffect', filteredBooks)
+
+
+
+  /* For recommended books */
+  useEffect(() => {
+    /* If there's no filter, just show allBooks */
+    if (recommendedGenre === '') {
+      setRecommendedBooks(allBooks)
+    }
+    else {
+      const getFiltered = async (genre, client) => {
+        const result = await client.query({
+          query: FILTERED_BOOKS,
+          variables: { genre }
+        })
+        setRecommendedBooks(result)
+      }
+      getFiltered(recommendedGenre, client)
+    }
+  }, [token, recommendedGenre, client, allBooks])
+
+  console.log('App.js filtered', filteredBooks)
+  console.log('App.js recommended', recommendedBooks) 
 
   const myInfo = useQuery(MY_INFO, {
     pollInterval: 1000
@@ -125,6 +123,13 @@ const App = () => {
   const [login] = useMutation(LOGIN, {
     onError: handleError
   })
+
+  useEffect(() => {
+    if (myInfo && myInfo.data && myInfo.data.me && 
+      myInfo.data.me.favoriteGenre !== '') {
+      setGenreFilter(myInfo.data.me.favoriteGenre)
+    }
+  }, [myInfo])
 
   const logout = () => {
     setToken(null)
@@ -177,10 +182,11 @@ const App = () => {
 
       <Books
         show={page === 'books'}
+        page={'booklist'}
         // books={allBooks}
         books={filteredBooks}
         setGenreFilter={setGenreFilter}
-        genresList={genresList}
+        // genresList={genresList}
       />
 
       <NewBook
@@ -190,11 +196,14 @@ const App = () => {
 
       <Books
         show={page === 'recommended'}
+        page={'recommended'}
         myInfo={myInfo}
-        books={allBooks}
-        defaultFilter={myInfo.data.me && myInfo.data.me.favoriteGenre}
-        setGenreFilter={setGenreFilter}
-        genresList={genresList}
+        // books={filteredBooks}
+        books={recommendedBooks}
+        // defaultFilter={myInfo.data.me && myInfo.data.me.favoriteGenre}
+        // setGenreFilter={setGenreFilter}
+        setGenreFilter={setRecommendedGenre}
+        // genresList={genresList}
       />
 
     </div>

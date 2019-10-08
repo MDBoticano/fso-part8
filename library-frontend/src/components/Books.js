@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 
 const Books = (props) => {
-  const [genresToShow, setGenresToShow] = useState(props.defaultFilter || '')
+  // const [genresToShow, setGenresToShow] = useState(props.defaultFilter || '')
   const [userFavGenre, setUserFavGenre] = useState('')
   const [username, setUsername] = useState('')
 
-  console.log('props books:', props.books)
+  console.log('props books:', props.page, props.books )
+  // console.log(props)
 
   useEffect(() => {
     // if (props.show && props.myInfo && !props.myInfo.loading) {
@@ -17,14 +18,15 @@ const Books = (props) => {
         setUserFavGenre(props.myInfo.data.me.favoriteGenre)
         setUsername(props.myInfo.data.me.username)
         // console.log('recommended is set')
-        setGenresToShow(props.myInfo.data.me.favoriteGenre)
+        // setGenresToShow(props.myInfo.data.me.favoriteGenre)
+        props.setGenreFilter(props.myInfo.data.me.favoriteGenre)
       } else {
         // console.log('user does not have a favorite genre')
         // console.log(props.myInfo.data.me)
-        setGenresToShow('')
+        // setGenresToShow('')
       }
     }
-  }, [props.myInfo, props.show])
+  }, [props])
 
   if (!props.show) {
     return null
@@ -35,9 +37,10 @@ const Books = (props) => {
   }
 
   const books = props.books.data.allBooks
-  console.log('books only', books)
+  // console.log('books only', books)
 
-  const genresList = props.genresList
+  // const genresList = props.genresList
+  const genresList = []
   /* go through all boooks */
   for (let i = 0, numBooks = books.length; i < numBooks; i++) {
     const book = books[i]
@@ -109,7 +112,7 @@ const Books = (props) => {
               genres
             </th>
           </tr>
-          {books.map(book => {
+          {/* {books.map(book => {
             if (genresToShow === '' || book.genres.includes(genresToShow)) {
               return (
                 <tr key={book.title}>
@@ -127,7 +130,21 @@ const Books = (props) => {
             else {
               return null
             }
-          })}
+          })} */}
+          {books.map(book => {
+              return (
+                <tr key={book.title}>
+                  <td>{book.title}</td>
+                  <td>{book.author.name}</td>
+                  <td>{book.published}</td>
+                  <td>
+                    <ul>
+                      {book.genres.map(genre => <li key={genre}>{genre}</li>)}
+                    </ul>
+                  </td>
+                </tr>
+              )
+            })}
         </tbody>
       </table>
 
