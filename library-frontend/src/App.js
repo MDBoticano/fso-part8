@@ -101,7 +101,7 @@ const App = () => {
       }
       getFiltered(filteredGenre, client)
     }
-  }, [token, filteredGenre, client])
+  }, [token, filteredGenre, client, allBooks])
 
   /* For recommended books */
   useEffect(() => {
@@ -119,7 +119,7 @@ const App = () => {
       }
       getFiltered(recommendedGenre, client)
     }
-  }, [token, recommendedGenre, client])
+  }, [token, recommendedGenre, client, allBooks])
 
   useEffect(() => {
     if (myInfo && myInfo.data && myInfo.data.me) {
@@ -134,11 +134,11 @@ const App = () => {
 
   /* get genres list */
   useEffect(() => {
-    console.log('allbooks', allBooks)
+    // console.log('allbooks', allBooks)
     let allGenres = []
     if (allBooks && allBooks.data && allBooks.data.allBooks) {
       const books = allBooks.data.allBooks
-      console.log(books)
+      // console.log(books)
       for (let i = 0, numBooks = books.length; i < numBooks; i++) {
         const book = books[i]
         for (let j = 0, numGenres = book.genres.length; j < numGenres; j++) {
@@ -150,7 +150,7 @@ const App = () => {
         }
       }
     }
-    console.log('genres', allGenres)
+    // console.log('genres', allGenres)
     setGenresList(allGenres)
   }, [allBooks])
 
