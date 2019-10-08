@@ -25,7 +25,7 @@ query allBooks ($genre: [String!]) {
   }
 }
 `
-
+/* useQuery version of filtering books */
 // const GetFilteredBooks = (genre) => {
 //   const { loading, data } = useQuery(FILTERED_BOOKS, {
 //     variables: { genre }})
@@ -39,17 +39,16 @@ const GetFilteredBooks = async (genre, client) => {
     variables: { genre }
   })
   if (loading) { return "loading..." }
-  console.log(data)
+  console.log('data:', data)
   return data
 }
-
-
 
 const App = () => {
   const [token, setToken] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
   const [page, setPage] = useState('authors') /* default page */
   const [genreFilter, setGenreFilter] = useState('Fiction')
+  const [filteredBooks, setFilteredBooks] = useState([])
 
   const client = useApolloClient()
 
@@ -63,12 +62,31 @@ const App = () => {
   const allAuthors = useQuery(ALL_AUTHORS)
   const allBooks = useQuery(ALL_BOOKS)
   
-  // const filteredBooksQuery = GetFilteredBooks(genreFilter)
-  // const filteredBooksQuery = GetFilteredBooks(genreFilter, client)
-  // const filteredBooks = { data: { allBooks: filteredBooksQuery.allBooks } }
-  // console.log(filteredBooks)
-  const allTheBooks = GetFilteredBooks('Fiction', client)
-  console.log(allTheBooks)
+  useEffect(() => {
+    /* If there's no filter, just show allBooks */
+    if(genreFilter === '') {
+      setFilteredBooks(allBooks)
+    }
+
+    /* Otherwise: query the filtered list of books */
+    const filtered = async (genreFilter, client) => {
+      const result = GetFilteredBooks(genreFilter, client)
+      return result
+    }
+
+    const filteredAsync = filtered(genreFilter, client)
+    
+    
+    console.log('useEffect', filteredAsync)
+
+
+    const filteredAllBooks = () => { 
+        if (filteredAsync.data && filteredAsync.data.allBooks) {
+        return filteredAsync.data.allBooks
+      }
+    }
+    setFilteredBooks({ data: { allBooks: filteredAllBooks() }})
+  }, [genreFilter, client])
 
   const myInfo = useQuery(MY_INFO, {
     pollInterval: 1000
@@ -138,6 +156,7 @@ const App = () => {
       <Books
         show={page === 'books'}
         books={allBooks}
+        // books={filteredBooks}
       />
 
       <NewBook
