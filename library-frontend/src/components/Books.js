@@ -18,20 +18,7 @@ const Books = (props) => {
   }
 
   const books = props.books.data.allBooks
-  // console.log(props.page, books)
-
-  const genresList = []
-  /* go through all boooks */
-  for (let i = 0, numBooks = books.length; i < numBooks; i++) {
-    const book = books[i]
-    for (let j = 0, numGenres = book.genres.length; j < numGenres; j++) {
-      const genre = book.genres[j]
-      /* add their genres to the list if it's unique */
-      if (!genresList.includes(genre)) {
-        genresList.push(genre)
-      }
-    }
-  }
+  const genresList = props.genresList
 
   const genreButtons = (genresList) => {
     if (props.myInfo) {

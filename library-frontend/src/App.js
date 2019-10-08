@@ -53,6 +53,8 @@ const App = () => {
   
   const [recommendedGenre, setRecommendedGenre] = useState('')
   const [recommendedBooks, setRecommendedBooks] = useState(null)
+
+  const [genresList, setGenresList] = useState([])
   
 
   const client = useApolloClient()
@@ -130,6 +132,28 @@ const App = () => {
     }
   }, [myInfo])
 
+  /* get genres list */
+  useEffect(() => {
+    console.log('allbooks', allBooks)
+    let allGenres = []
+    if (allBooks && allBooks.data && allBooks.data.allBooks) {
+      const books = allBooks.data.allBooks
+      console.log(books)
+      for (let i = 0, numBooks = books.length; i < numBooks; i++) {
+        const book = books[i]
+        for (let j = 0, numGenres = book.genres.length; j < numGenres; j++) {
+          const genre = book.genres[j]
+          /* add their genres to the list if it's unique */
+          if (!allGenres.includes(genre)) {
+            allGenres.push(genre)
+          }
+        }
+      }
+    }
+    console.log('genres', allGenres)
+    setGenresList(allGenres)
+  }, [allBooks])
+
   const logout = () => {
     setToken(null)
     setPage('authors')
@@ -185,7 +209,7 @@ const App = () => {
         // books={allBooks}
         books={filteredBooks}
         setGenreFilter={setFilteredGenre}
-        // genresList={genresList}
+        genresList={genresList}
       />
 
       <Books
@@ -198,7 +222,7 @@ const App = () => {
         // setGenreFilter={setGenreFilter}
         setGenreFilter={setRecommendedGenre}
         setRecommendedGenre={setRecommendedGenre}
-        // genresList={genresList}
+        genresList={genresList}
       />
 
      
