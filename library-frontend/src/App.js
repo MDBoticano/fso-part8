@@ -33,41 +33,24 @@ const GetFilteredBooks = (genre) => {
   return data
 }
 
-// const [ fictionBooks ] = useQuery(FICTION_BOOKS, {
-//   variables: { genre:"Fiction" }
-//   })
-// const [ fictionBooks ] = useQuery(FICTION_BOOKS)
-// const genre = "Fiction"
-// const fictionBooklist = async () => {
-// fictionBooks({
-//   variables: { genre }
-// })
-// }
-
-
-
-// console.log(fictionBooklist)
-
-// console.log(fictionBooks.data)
-// console.log(data)
-
-// const getBooksByGenre = async ({ genre }) => {
-//   const result = await client.query({ query: FILTERED_BOOKS, 
-//     variables: { genre }})
-//   console.log('result', result)
-//   return result
-// }
-
-// const filteredBooks = getBooksByGenre('Fiction')
-// console.log('filtered books', filteredBooks)
 
 
 const App = () => {
   const [token, setToken] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
   const [page, setPage] = useState('authors') /* default page */
+  const [genreFilter, setGenreFilter] = useState('Non-Fiction')
 
   const client = useApolloClient()
+
+  // const GetFilteredBooks = (genre) => {
+  //   const { loading, data } = client.query({
+  //     query: FILTERED_BOOKS,
+  //     variables: { genre }
+  //   })
+  //   if (loading) { return "loading..." }
+  //   return data
+  // }
 
   const handleError = (error) => {
     setErrorMessage(error.graphQLErrors[0].message)
@@ -79,11 +62,10 @@ const App = () => {
   const allAuthors = useQuery(ALL_AUTHORS)
   const allBooks = useQuery(ALL_BOOKS)
 
-
-  const [genreFilter, setGenreFilter] = useState('Fiction')
-  const fictionBooks = GetFilteredBooks(genreFilter)
-  console.log(fictionBooks)
-
+  
+  const filteredBooksQuery = GetFilteredBooks(genreFilter)
+  const filteredBooks = { data: { allBooks: filteredBooksQuery.allBooks } }
+  console.log(filteredBooks)
 
   const myInfo = useQuery(MY_INFO, {
     pollInterval: 1000
