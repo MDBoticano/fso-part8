@@ -67,13 +67,15 @@ const Books = (props) => {
             return (
               <button
                 key={genre}
-                onClick={() => setGenresToShow(genre)}
+                // onClick={() => setGenresToShow(genre)}
+                onClick={() => props.setGenreFilter(genre)}
               >
                 {genre}
               </button>
             )
           })}
           <button onClick={() => props.setGenreFilter('')}>all genres</button>
+          {/* <button onClick={() => setGenresToShow('')}>all genres</button> */}
         </div>
       </div>
     )
@@ -94,7 +96,9 @@ const Books = (props) => {
       <table>
         <tbody>
           <tr>
-            <th></th>
+            <th>
+              title
+            </th>
             <th>
               author
             </th>
