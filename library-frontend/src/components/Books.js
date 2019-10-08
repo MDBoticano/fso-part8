@@ -37,7 +37,7 @@ const Books = (props) => {
   const books = props.books.data.allBooks
   console.log('books only', books)
 
-  const genresList = []
+  const genresList = props.genresList
   /* go through all boooks */
   for (let i = 0, numBooks = books.length; i < numBooks; i++) {
     const book = books[i]
@@ -63,7 +63,7 @@ const Books = (props) => {
       <div>
         <p>Filter by genres:</p>
         <div>
-          {genresList.map(genre => {
+          {genresList && genresList.map(genre => {
             return (
               <button
                 key={genre}
@@ -73,7 +73,7 @@ const Books = (props) => {
               </button>
             )
           })}
-          <button onClick={() => setGenresToShow('')}>all genres</button>
+          <button onClick={() => props.setGenreFilter('')}>all genres</button>
         </div>
       </div>
     )

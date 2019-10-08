@@ -6,7 +6,8 @@ import NewBook from './components/NewBook'
 import AuthorForm from './components/AuthorForm'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
-import { LOGIN, ALL_AUTHORS, ALL_BOOKS, ADD_BOOK, EDIT_AUTHOR, MY_INFO 
+import {
+  LOGIN, ALL_AUTHORS, ALL_BOOKS, ADD_BOOK, EDIT_AUTHOR, MY_INFO
 } from './gql/queries'
 import { gql } from 'apollo-boost'
 
@@ -39,7 +40,7 @@ const GetFilteredBooks = async (genre, client) => {
     variables: { genre }
   })
   if (loading) { return "loading..." }
-  console.log('data:', data)
+  console.log('filtered books data:', data)
   return data
 }
 
@@ -47,8 +48,9 @@ const App = () => {
   const [token, setToken] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
   const [page, setPage] = useState('authors') /* default page */
-  const [genreFilter, setGenreFilter] = useState('Fiction')
-  const [filteredBooks, setFilteredBooks] = useState([])
+  const [genreFilter, setGenreFilter] = useState('')
+  const [filteredBooks, setFilteredBooks] = useState(null)
+  const [genresList, setGenresList] = useState([])
 
   const client = useApolloClient()
 
@@ -61,32 +63,52 @@ const App = () => {
 
   const allAuthors = useQuery(ALL_AUTHORS)
   const allBooks = useQuery(ALL_BOOKS)
-  
+
   useEffect(() => {
     /* If there's no filter, just show allBooks */
-    if(genreFilter === '') {
+    if (genreFilter === '') {
+      console.log('no filter, use all books')
       setFilteredBooks(allBooks)
     }
+    else {
+      /* Otherwise: query the filtered list of books */
+      // const filtered =  (genreFilter, client) => {
+      //   const result =  GetFilteredBooks(genreFilter, client)
+      //   return result
+      // }
 
-    /* Otherwise: query the filtered list of books */
-    const filtered = async (genreFilter, client) => {
-      const result = GetFilteredBooks(genreFilter, client)
-      return result
-    }
+      // // const filteredAsync = filtered(genreFilter, client)
 
-    const filteredAsync = filtered(genreFilter, client)
-    
-    
-    console.log('useEffect', filteredAsync)
+      // // console.log('useEffect', filteredAsync)
 
-
-    const filteredAllBooks = () => { 
-        if (filteredAsync.data && filteredAsync.data.allBooks) {
-        return filteredAsync.data.allBooks
+      // // const filteredAllBooks = () => {
+      // //   if (filteredAsync.data && filteredAsync.data.allBooks) {
+      // //     return filteredAsync.data.allBooks
+      // //   }
+      // // }
+      // // setFilteredBooks({ data: { allBooks: filteredAllBooks() } })
+      // setFilteredBooks({ data: { allBooks: filtered(genreFilter, client) } })
+      const GetFilteredBooks = async (genre, client) => {
+        const { loading, data } = await client.query({
+          query: FILTERED_BOOKS,
+          variables: { genre }
+        })
+        if (loading) { return "loading..." }
+        console.log('filtered books data:', data)
+        return data
       }
+      const getFiltered = async (genre, client) => {
+        const result = await client.query({
+          query: FILTERED_BOOKS,
+          variables: { genre }
+        })
+        setFilteredBooks(result)
+      }
+      getFiltered(genreFilter, client)
     }
-    setFilteredBooks({ data: { allBooks: filteredAllBooks() }})
-  }, [genreFilter, client])
+  }, [genreFilter, client, allBooks])
+
+  console.log('outside useEffect', filteredBooks)
 
   const myInfo = useQuery(MY_INFO, {
     pollInterval: 1000
@@ -111,7 +133,7 @@ const App = () => {
     client.resetStore()
   }
 
-  if(!token){
+  if (!token) {
     return (
       <div>
         <Notification errorMessage={errorMessage} />
@@ -120,7 +142,7 @@ const App = () => {
     )
   }
 
-  if(token && myInfo.data.me === null) {
+  if (token && myInfo.data.me === null) {
     return (
       <div>loading...</div>
     )
@@ -147,16 +169,18 @@ const App = () => {
         authors={allAuthors}
       />
 
-      <AuthorForm 
-        show={page === 'authors'} 
+      <AuthorForm
+        show={page === 'authors'}
         authors={allAuthors}
         editAuthor={editAuthor}
       />
 
       <Books
         show={page === 'books'}
-        books={allBooks}
-        // books={filteredBooks}
+        // books={allBooks}
+        books={filteredBooks}
+        setGenreFilter={setGenreFilter}
+        genresList={genresList}
       />
 
       <NewBook
@@ -166,9 +190,11 @@ const App = () => {
 
       <Books
         show={page === 'recommended'}
-        books={allBooks}
         myInfo={myInfo}
+        books={allBooks}
         defaultFilter={myInfo.data.me && myInfo.data.me.favoriteGenre}
+        setGenreFilter={setGenreFilter}
+        genresList={genresList}
       />
 
     </div>
