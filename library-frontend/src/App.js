@@ -82,10 +82,7 @@ const App = () => {
       }
       getFiltered(genreFilter, client)
     }
-  }, [token, genreFilter, client, allBooks])
-
-
-
+  }, [token, genreFilter, client])
 
   /* For recommended books */
   useEffect(() => {
@@ -103,10 +100,10 @@ const App = () => {
       }
       getFiltered(recommendedGenre, client)
     }
-  }, [token, recommendedGenre, client, allBooks])
+  }, [token, recommendedGenre, client])
 
-  console.log('App.js filtered', filteredBooks)
-  console.log('App.js recommended', recommendedBooks) 
+  // console.log('App.js filtered', filteredBooks)
+  // console.log('App.js recommended', recommendedBooks) 
 
   const myInfo = useQuery(MY_INFO, {
     pollInterval: 1000

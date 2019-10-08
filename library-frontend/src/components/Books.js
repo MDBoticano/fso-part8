@@ -1,32 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 
 const Books = (props) => {
-  // const [genresToShow, setGenresToShow] = useState(props.defaultFilter || '')
-  const [userFavGenre, setUserFavGenre] = useState('')
-  const [username, setUsername] = useState('')
 
-  console.log('props books:', props.page, props.books )
+  // console.log('props books:', props.page, props.books )
   // console.log(props)
 
-  useEffect(() => {
-    // if (props.show && props.myInfo && !props.myInfo.loading) {
-    if (props.myInfo && !props.myInfo.loading) {
-      // console.log('page is recommended')
-      // console.log(props.myInfo.data)
-      if (props.myInfo.data.me && (props.myInfo.data.me.favoriteGenre !== '')) {
-        // console.log('user has a fav genre')
-        setUserFavGenre(props.myInfo.data.me.favoriteGenre)
-        setUsername(props.myInfo.data.me.username)
-        // console.log('recommended is set')
-        // setGenresToShow(props.myInfo.data.me.favoriteGenre)
-        props.setGenreFilter(props.myInfo.data.me.favoriteGenre)
-      } else {
-        // console.log('user does not have a favorite genre')
-        // console.log(props.myInfo.data.me)
-        // setGenresToShow('')
-      }
-    }
-  }, [props])
+  let username = ''
+  let userFavGenre = ''
+
+  if (props.show && props.myInfo && !props.myInfo.loading) {
+    username = props.myInfo.data.me.username
+    userFavGenre = props.myInfo.data.me.favoriteGenre
+  }
 
   if (!props.show) {
     return null
@@ -57,7 +42,9 @@ const Books = (props) => {
     if (props.myInfo) {
       return (
         <div>
-          <p>Filtering by {username}'s favorite genre: {userFavGenre}</p>
+          <p>
+            Filtering by {username}'s favorite genre: {userFavGenre}
+          </p>
         </div>
       )
     }
