@@ -157,6 +157,7 @@ const App = () => {
   const logout = () => {
     setToken(null)
     setPage('authors')
+    setFilteredGenre('')
     localStorage.clear()
     client.resetStore()
   }
