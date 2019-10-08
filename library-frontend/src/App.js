@@ -48,11 +48,12 @@ const App = () => {
   const [token, setToken] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
   const [page, setPage] = useState('authors') /* default page */
-  const [genreFilter, setGenreFilter] = useState('')
+  const [filteredGenre, setFilteredGenre] = useState('')
   const [filteredBooks, setFilteredBooks] = useState(null)
-  // const [genresList, setGenresList] = useState([])
-  const [recommendedBooks, setRecommendedBooks] = useState(null)
+  
   const [recommendedGenre, setRecommendedGenre] = useState('')
+  const [recommendedBooks, setRecommendedBooks] = useState(null)
+  
 
   const client = useApolloClient()
 
@@ -66,10 +67,26 @@ const App = () => {
   const allAuthors = useQuery(ALL_AUTHORS)
   const allBooks = useQuery(ALL_BOOKS)
 
+  const myInfo = useQuery(MY_INFO, {
+    pollInterval: 1000
+  })
+
+  const [addBook] = useMutation(ADD_BOOK, {
+    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }]
+  })
+
+  const [editAuthor] = useMutation(EDIT_AUTHOR, {
+    refetchQueries: [{ query: ALL_AUTHORS }],
+  })
+
+  const [login] = useMutation(LOGIN, {
+    onError: handleError
+  })
+
   /* For book list */
   useEffect(() => {
     /* If there's no filter, just show allBooks */
-    if (genreFilter === '') {
+    if (filteredGenre === '') {
       setFilteredBooks(allBooks)
     }
     else {
@@ -80,9 +97,9 @@ const App = () => {
         })
         setFilteredBooks(result)
       }
-      getFiltered(genreFilter, client)
+      getFiltered(filteredGenre, client)
     }
-  }, [token, genreFilter, client])
+  }, [token, filteredGenre, client])
 
   /* For recommended books */
   useEffect(() => {
@@ -102,29 +119,14 @@ const App = () => {
     }
   }, [token, recommendedGenre, client])
 
-  // console.log('App.js filtered', filteredBooks)
-  // console.log('App.js recommended', recommendedBooks) 
-
-  const myInfo = useQuery(MY_INFO, {
-    pollInterval: 1000
-  })
-
-  const [addBook] = useMutation(ADD_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }]
-  })
-
-  const [editAuthor] = useMutation(EDIT_AUTHOR, {
-    refetchQueries: [{ query: ALL_AUTHORS }],
-  })
-
-  const [login] = useMutation(LOGIN, {
-    onError: handleError
-  })
-
   useEffect(() => {
-    if (myInfo && myInfo.data && myInfo.data.me && 
-      myInfo.data.me.favoriteGenre !== '') {
-      setGenreFilter(myInfo.data.me.favoriteGenre)
+    if (myInfo && myInfo.data && myInfo.data.me) {
+      if (myInfo.data.me.favoriteGenre !== '') {
+        setRecommendedGenre(myInfo.data.me.favoriteGenre)
+      }
+      else {
+        setRecommendedGenre('n/a')
+      }
     }
   }, [myInfo])
 
@@ -182,13 +184,8 @@ const App = () => {
         page={'booklist'}
         // books={allBooks}
         books={filteredBooks}
-        setGenreFilter={setGenreFilter}
+        setGenreFilter={setFilteredGenre}
         // genresList={genresList}
-      />
-
-      <NewBook
-        show={page === 'add'}
-        addBook={addBook}
       />
 
       <Books
@@ -200,8 +197,18 @@ const App = () => {
         // defaultFilter={myInfo.data.me && myInfo.data.me.favoriteGenre}
         // setGenreFilter={setGenreFilter}
         setGenreFilter={setRecommendedGenre}
+        setRecommendedGenre={setRecommendedGenre}
         // genresList={genresList}
       />
+
+     
+
+      <NewBook
+        show={page === 'add'}
+        addBook={addBook}
+      />
+
+
 
     </div>
   )
