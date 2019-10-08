@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useQuery, useMutation, useApolloClient } from '@apollo/react-hooks'
 import Authors from './components/Authors'
 import Books from './components/Books'
@@ -8,6 +8,59 @@ import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
 import { LOGIN, ALL_AUTHORS, ALL_BOOKS, ADD_BOOK, EDIT_AUTHOR, MY_INFO 
 } from './gql/queries'
+import { gql } from 'apollo-boost'
+
+
+const FILTERED_BOOKS = gql`
+query allBooks ($genre: [String!]) {
+  allBooks( genre: $genre ) {
+    title
+    author {
+      name
+      born
+      bookCount
+    }
+    published
+    genres
+  }
+}
+`
+
+const GetFilteredBooks = (genre) => {
+  const { loading, data } = useQuery(FILTERED_BOOKS, {
+    variables: { genre }})
+  if (loading) { return "loading..." }
+  return data
+}
+
+// const [ fictionBooks ] = useQuery(FICTION_BOOKS, {
+//   variables: { genre:"Fiction" }
+//   })
+// const [ fictionBooks ] = useQuery(FICTION_BOOKS)
+// const genre = "Fiction"
+// const fictionBooklist = async () => {
+// fictionBooks({
+//   variables: { genre }
+// })
+// }
+
+
+
+// console.log(fictionBooklist)
+
+// console.log(fictionBooks.data)
+// console.log(data)
+
+// const getBooksByGenre = async ({ genre }) => {
+//   const result = await client.query({ query: FILTERED_BOOKS, 
+//     variables: { genre }})
+//   console.log('result', result)
+//   return result
+// }
+
+// const filteredBooks = getBooksByGenre('Fiction')
+// console.log('filtered books', filteredBooks)
+
 
 const App = () => {
   const [token, setToken] = useState(null)
@@ -25,6 +78,13 @@ const App = () => {
 
   const allAuthors = useQuery(ALL_AUTHORS)
   const allBooks = useQuery(ALL_BOOKS)
+
+
+  const [genreFilter, setGenreFilter] = useState('Fiction')
+  const fictionBooks = GetFilteredBooks(genreFilter)
+  console.log(fictionBooks)
+
+
   const myInfo = useQuery(MY_INFO, {
     pollInterval: 1000
   })
