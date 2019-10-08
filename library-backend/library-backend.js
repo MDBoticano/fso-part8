@@ -92,7 +92,7 @@ const resolvers = {
 
       /* Filter by genres only */
       else if (!args.author && args.genre) {
-        const allBooks = await Book.find({ genres: { $in: [args.genre] } })
+        const allBooks = await Book.find({ genres: { $in: args.genre } })
         return getAuthorDetails(allBooks)
       }
 
@@ -108,7 +108,7 @@ const resolvers = {
         const authorId = await authorNameToId(args.author)
         const allBooks = await Book.find({
           author: { $in: [authorId] },
-          genres: { $in: [args.genre] }
+          genres: { $in: args.genre }
         })
         return getAuthorDetails(allBooks)
       }

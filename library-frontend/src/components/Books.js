@@ -1,30 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 
 const Books = (props) => {
-  const [genresToShow, setGenresToShow] = useState(props.defaultFilter || '')
-  const [userFavGenre, setUserFavGenre] = useState('')
-  const [username ,setUsername] = useState('')
-
-  useEffect(() => {
-    if (props.show && props.myInfo && !props.myInfo.loading) {
-      // console.log('page is recommended')
-      // console.log(props.myInfo.data)
-      if (props.myInfo.data.me && (props.myInfo.data.me.favoriteGenre !== '')) {
-        // console.log('user has a fav genre')
-        setUserFavGenre(props.myInfo.data.me.favoriteGenre)
-        setUsername(props.myInfo.data.me.username)
-        // console.log('recommended is set')
-        setGenresToShow(props.myInfo.data.me.favoriteGenre)
-      } else {
-        // console.log('user does not have a favorite genre')
-        // console.log(props.myInfo.data.me)
-        setGenresToShow('')
-      }
-    }
-  }, [props.myInfo, props.show])
+  let username = ''
+  let userFavGenre = ''
 
   if (!props.show) {
     return null
+  }
+
+  if (props.show && props.myInfo && !props.myInfo.loading) {
+    username = props.myInfo.data.me.username
+    userFavGenre = props.myInfo.data.me.favoriteGenre
   }
 
   if (props.books.loading || (props.myInfo && props.myInfo.loading)) {
@@ -32,25 +18,16 @@ const Books = (props) => {
   }
 
   const books = props.books.data.allBooks
-
-  const genresList = []
-  /* go through all boooks */
-  for (let i = 0, numBooks = books.length; i < numBooks; i++) {
-    const book = books[i]
-    for (let j = 0, numGenres = book.genres.length; j < numGenres; j++) {
-      const genre = book.genres[j]
-      /* add their genres to the list if it's unique */
-      if (!genresList.includes(genre)) {
-        genresList.push(genre)
-      }
-    }
-  }
+  // console.log(props.page, books)
+  const genresList = props.genresList
 
   const genreButtons = (genresList) => {
     if (props.myInfo) {
       return (
         <div>
-          <p>Filtering by {username}'s favorite genre: {userFavGenre}</p>
+          <p>
+            Filtering by {username}'s favorite genre: {userFavGenre}
+          </p>
         </div>
       )
     }
@@ -59,17 +36,17 @@ const Books = (props) => {
       <div>
         <p>Filter by genres:</p>
         <div>
-          {genresList.map(genre => {
+          {genresList && genresList.map(genre => {
             return (
               <button
                 key={genre}
-                onClick={() => setGenresToShow(genre)}
+                onClick={() => props.setGenreFilter(genre)}
               >
                 {genre}
               </button>
             )
           })}
-          <button onClick={() => setGenresToShow('')}>all genres</button>
+          <button onClick={() => props.setGenreFilter('')}>all genres</button>
         </div>
       </div>
     )
@@ -90,7 +67,9 @@ const Books = (props) => {
       <table>
         <tbody>
           <tr>
-            <th></th>
+            <th>
+              title
+            </th>
             <th>
               author
             </th>
@@ -102,7 +81,6 @@ const Books = (props) => {
             </th>
           </tr>
           {books.map(book => {
-            if (genresToShow === '' || book.genres.includes(genresToShow)) {
               return (
                 <tr key={book.title}>
                   <td>{book.title}</td>
@@ -115,11 +93,7 @@ const Books = (props) => {
                   </td>
                 </tr>
               )
-            }
-            else {
-              return null
-            }
-          })}
+            })}
         </tbody>
       </table>
 
