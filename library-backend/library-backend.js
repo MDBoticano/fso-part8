@@ -84,6 +84,7 @@ const resolvers = {
     bookCount: () => Book.collection.countDocuments(),
     authorCount: () => Author.collection.countDocuments(),
     allBooks: async (root, args) => {
+      // console.log('backend fetch', args)
       /* No args: ALL books */
       if (!args.author && !args.genre) {
         const allBooks = await Book.find({})

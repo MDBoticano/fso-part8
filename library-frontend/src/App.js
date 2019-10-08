@@ -66,8 +66,12 @@ const App = () => {
     }, 10000)
   }
 
-  const allAuthors = useQuery(ALL_AUTHORS)
-  const allBooks = useQuery(ALL_BOOKS)
+  const allAuthors = useQuery(ALL_AUTHORS, {
+    fetchPolicy: "network-only"
+  })
+  const allBooks = useQuery(ALL_BOOKS, {
+    fetchPolicy: "network-only"
+  })
 
   const myInfo = useQuery(MY_INFO, {
     pollInterval: 1000
@@ -89,46 +93,52 @@ const App = () => {
   useEffect(() => {
     /* If there's no filter, just show allBooks */
     if (filteredGenre === '') {
+      // console.log('no genre to filter all')
       setFilteredBooks(allBooks)
     }
     else {
       const getFiltered = async (genre, client) => {
+        // console.log('querying client', genre)
         const result = await client.query({
           query: FILTERED_BOOKS,
-          variables: { genre }
+          variables: { genre },
+          fetchPolicy: "no-cache"
         })
         setFilteredBooks(result)
       }
       getFiltered(filteredGenre, client)
     }
-  }, [token, filteredGenre, client, allBooks])
+  }, [token, filteredGenre, client, allBooks, page])
 
   /* For recommended books */
   useEffect(() => {
     /* If there's no filter, just show allBooks */
     if (recommendedGenre === '') {
+      // console.log('no recommended genre to filter')
       setRecommendedBooks(allBooks)
     }
     else {
       const getFiltered = async (genre, client) => {
+        // console.log('querying client')
         const result = await client.query({
           query: FILTERED_BOOKS,
-          variables: { genre }
+          variables: { genre },
+          fetchPolicy: "no-cache"
         })
         setRecommendedBooks(result)
       }
       getFiltered(recommendedGenre, client)
     }
-  }, [token, recommendedGenre, client, allBooks])
+  }, [token, recommendedGenre, client, allBooks, page])
 
   useEffect(() => {
     if (myInfo && myInfo.data && myInfo.data.me) {
       if (myInfo.data.me.favoriteGenre !== '') {
         setRecommendedGenre(myInfo.data.me.favoriteGenre)
       }
-      else {
-        setRecommendedGenre('n/a')
-      }
+      // else {
+      //   setRecommendedGenre('n/a')
+      // }
     }
   }, [myInfo])
 
@@ -207,7 +217,6 @@ const App = () => {
       <Books
         show={page === 'books'}
         page={'booklist'}
-        // books={allBooks}
         books={filteredBooks}
         setGenreFilter={setFilteredGenre}
         genresList={genresList}
@@ -217,24 +226,15 @@ const App = () => {
         show={page === 'recommended'}
         page={'recommended'}
         myInfo={myInfo}
-        // books={filteredBooks}
         books={recommendedBooks}
-        // defaultFilter={myInfo.data.me && myInfo.data.me.favoriteGenre}
-        // setGenreFilter={setGenreFilter}
         setGenreFilter={setRecommendedGenre}
-        setRecommendedGenre={setRecommendedGenre}
         genresList={genresList}
       />
-
-     
 
       <NewBook
         show={page === 'add'}
         addBook={addBook}
       />
-
-
-
     </div>
   )
 }
