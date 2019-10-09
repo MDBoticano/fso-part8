@@ -14,9 +14,11 @@ import { gql } from 'apollo-boost'
 
 const BOOK_DETAILS = gql`
 fragment BookDetails on Book {
+  id
   title
   author {
     name
+    born
     bookCount
   }
   published
@@ -61,7 +63,6 @@ const App = () => {
 
   const [genresList, setGenresList] = useState([])
   
-
   const client = useApolloClient()
 
   const handleError = (error) => {
@@ -70,6 +71,23 @@ const App = () => {
       setErrorMessage(null)
     }, 10000)
   }
+
+  const updateCacheWith = (addedBook) => {
+    console.log(addedBook)
+    const includedIn = (set, object) => {
+      return (set.map(book => book.id)).includes(object.id)
+    }
+
+    const dataInStore = client.readQuery({ query: ALL_BOOKS })
+    if(!includedIn(dataInStore.allBooks, addedBook)) {
+      dataInStore.allBooks.push(addedBook)
+      client.writeQuery({
+        query: ALL_BOOKS,
+        data: dataInStore
+      })
+    }
+  }
+
 
   const allAuthors = useQuery(ALL_AUTHORS, {
     fetchPolicy: "network-only"
@@ -83,7 +101,11 @@ const App = () => {
   })
 
   const [addBook] = useMutation(ADD_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }]
+    onError: handleError,
+    update: (store, response) => {
+      updateCacheWith(response.data.addBook)
+    },
+    // refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }]
   })
 
   const [editAuthor] = useMutation(EDIT_AUTHOR, {
@@ -180,6 +202,9 @@ const App = () => {
       setTimeout(() => {
         setErrorMessage('')
       }, 5000)
+
+      const addedBook = subscriptionData.data.bookAdded
+      updateCacheWith(addedBook)
       // console.log(subscriptionData)
     }
   })
