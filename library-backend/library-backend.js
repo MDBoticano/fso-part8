@@ -40,6 +40,7 @@ const typeDefs = gql`
   type Author {
     name: String!
     born: Int
+    books: [Book!]!
     bookCount: Int!
   }
   type Book {
@@ -129,7 +130,15 @@ const resolvers = {
     }
   },
   Author: {
+    books: async (root) => {
+      console.log(`Author's Books: Book.find`)
+      const books = await Book.find({
+        author: { $in: [root._id]}
+      })
+      return books
+    },
     bookCount: async (root) => {
+      /* og Code */
       /* get the ID of the author */
       let authorId = null
       const existingAuthor = await Author.findOne({ name: root.name })
@@ -145,6 +154,9 @@ const resolvers = {
         booksWrittenLength = booksWritten.length
       }
       return booksWrittenLength
+      /* end OG code */
+      // console.log(root)
+      // return root.books.length
     }
   },
   Mutation: {
