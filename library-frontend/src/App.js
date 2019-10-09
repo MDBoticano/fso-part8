@@ -27,13 +27,13 @@ fragment BookDetails on Book {
 `
 
 const BOOK_ADDED = gql`
-  subscription {
-    bookAdded {
-      ...BookDetails
-    }
+subscription {
+  bookAdded {
+    ...BookDetails
   }
+}
 
-  ${BOOK_DETAILS}
+${BOOK_DETAILS}
 `
 
 const FILTERED_BOOKS = gql`
@@ -73,7 +73,7 @@ const App = () => {
   }
 
   const updateCacheWith = (addedBook) => {
-    console.log(addedBook)
+    // console.log('added book', addedBook)
     const includedIn = (set, object) => {
       return (set.map(book => book.id)).includes(object.id)
     }
@@ -88,9 +88,9 @@ const App = () => {
     }
   }
 
-
   const allAuthors = useQuery(ALL_AUTHORS, {
-    fetchPolicy: "network-only"
+    fetchPolicy: "network-only",
+    // pollInterval: 1000
   })
   const allBooks = useQuery(ALL_BOOKS, {
     fetchPolicy: "network-only"
@@ -106,6 +106,7 @@ const App = () => {
       updateCacheWith(response.data.addBook)
     },
     // refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }]
+    refetchQueries: [{ query: ALL_AUTHORS }]
   })
 
   const [editAuthor] = useMutation(EDIT_AUTHOR, {

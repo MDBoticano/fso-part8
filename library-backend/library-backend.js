@@ -40,6 +40,7 @@ const typeDefs = gql`
   type Author {
     name: String!
     born: Int
+    books: [Book!]!
     bookCount: Int!
   }
   type Book {
@@ -81,6 +82,7 @@ const typeDefs = gql`
 
   type Subscription {
     bookAdded: Book!
+    authorAdded: Author!
   }
 `
 
@@ -122,29 +124,41 @@ const resolvers = {
       return []
     },
     allAuthors: (root, args) => {
-      return Author.find({})
+      return Author.find({}).populate('books')
     },
     me: (root, args, context) => {
       return context.currentUser
     }
   },
   Author: {
+    // books: async (root) => {
+    //   console.log(`Author's Books: Book.find`)
+    //   const books = await Book.find({
+    //     author: { $in: [root._id]}
+    //   })
+    //   return books
+    // },
     bookCount: async (root) => {
+      /* og Code */
       /* get the ID of the author */
-      let authorId = null
-      const existingAuthor = await Author.findOne({ name: root.name })
-      if (existingAuthor !== null && existingAuthor._id !== null) {
-        authorId = existingAuthor._id
-      }
+      // let authorId = null
+      // console.log('bookCount: Author.find')
+      // const existingAuthor = await Author.findOne({ name: root.name })
+      // if (existingAuthor !== null && existingAuthor._id !== null) {
+      //   authorId = existingAuthor._id
+      // }
 
-      if (authorId === null) { return 0 }
+      // if (authorId === null) { return 0 }
 
-      const booksWritten = await Book.find({ author: authorId })
-      let booksWrittenLength = 0
-      if (booksWritten !== null && booksWritten.length) {
-        booksWrittenLength = booksWritten.length
-      }
-      return booksWrittenLength
+      // const booksWritten = await Book.find({ author: authorId })
+      // let booksWrittenLength = 0
+      // if (booksWritten !== null && booksWritten.length) {
+      //   booksWrittenLength = booksWritten.length
+      // }
+      // return booksWrittenLength
+      /* end OG code */
+      // console.log(root)
+      return root.books.length
     }
   },
   Mutation: {
@@ -166,6 +180,8 @@ const resolvers = {
         try {
           bookAuthor = new Author({ name: args.author })
           await bookAuthor.save()
+
+          pubSub.publish('AUTHOR_ADDED', { authorAdded: bookAuthor })
         }
         catch (error) {
           throw new UserInputError(error.message, {
@@ -184,6 +200,10 @@ const resolvers = {
 
       try {
         await book.save()
+        /* also add the book to the author's book list */
+        await bookAuthor.updateOne(
+          { $push: { books: book } }
+        )
       }
       catch (error) {
         throw new UserInputError(error.message, {
@@ -235,6 +255,9 @@ const resolvers = {
   Subscription: {
     bookAdded: {
       subscribe: () => pubSub.asyncIterator(['BOOK_ADDED'])
+    },
+    authorAdded: {
+      subscribe: () => pubSub.asyncIterator(['AUTHOR_ADDED'])
     }
   }
 }
