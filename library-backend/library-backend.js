@@ -123,24 +123,25 @@ const resolvers = {
       return []
     },
     allAuthors: (root, args) => {
-      return Author.find({})
+      return Author.find({}).populate('books')
     },
     me: (root, args, context) => {
       return context.currentUser
     }
   },
   Author: {
-    books: async (root) => {
-      console.log(`Author's Books: Book.find`)
-      const books = await Book.find({
-        author: { $in: [root._id]}
-      })
-      return books
-    },
+    // books: async (root) => {
+    //   console.log(`Author's Books: Book.find`)
+    //   const books = await Book.find({
+    //     author: { $in: [root._id]}
+    //   })
+    //   return books
+    // },
     bookCount: async (root) => {
       /* og Code */
       /* get the ID of the author */
       let authorId = null
+      console.log('bookCount: Author.find')
       const existingAuthor = await Author.findOne({ name: root.name })
       if (existingAuthor !== null && existingAuthor._id !== null) {
         authorId = existingAuthor._id
@@ -196,6 +197,10 @@ const resolvers = {
 
       try {
         await book.save()
+        /* also add the book to the author's book list */
+        await bookAuthor.update(
+          { $push: { books: book } }
+        ).then(result => console.log(result))
       }
       catch (error) {
         throw new UserInputError(error.message, {
