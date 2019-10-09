@@ -140,24 +140,24 @@ const resolvers = {
     bookCount: async (root) => {
       /* og Code */
       /* get the ID of the author */
-      let authorId = null
-      console.log('bookCount: Author.find')
-      const existingAuthor = await Author.findOne({ name: root.name })
-      if (existingAuthor !== null && existingAuthor._id !== null) {
-        authorId = existingAuthor._id
-      }
+      // let authorId = null
+      // console.log('bookCount: Author.find')
+      // const existingAuthor = await Author.findOne({ name: root.name })
+      // if (existingAuthor !== null && existingAuthor._id !== null) {
+      //   authorId = existingAuthor._id
+      // }
 
-      if (authorId === null) { return 0 }
+      // if (authorId === null) { return 0 }
 
-      const booksWritten = await Book.find({ author: authorId })
-      let booksWrittenLength = 0
-      if (booksWritten !== null && booksWritten.length) {
-        booksWrittenLength = booksWritten.length
-      }
-      return booksWrittenLength
+      // const booksWritten = await Book.find({ author: authorId })
+      // let booksWrittenLength = 0
+      // if (booksWritten !== null && booksWritten.length) {
+      //   booksWrittenLength = booksWritten.length
+      // }
+      // return booksWrittenLength
       /* end OG code */
       // console.log(root)
-      // return root.books.length
+      return root.books.length
     }
   },
   Mutation: {
@@ -198,9 +198,9 @@ const resolvers = {
       try {
         await book.save()
         /* also add the book to the author's book list */
-        await bookAuthor.update(
+        await bookAuthor.updateOne(
           { $push: { books: book } }
-        ).then(result => console.log(result))
+        )
       }
       catch (error) {
         throw new UserInputError(error.message, {
