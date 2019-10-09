@@ -26,23 +26,6 @@ query allBooks ($genre: [String!]) {
   }
 }
 `
-/* useQuery version of filtering books */
-// const GetFilteredBooks = (genre) => {
-//   const { loading, data } = useQuery(FILTERED_BOOKS, {
-//     variables: { genre }})
-//   if (loading) { return "loading..." }
-//   return data
-// }
-
-// const GetFilteredBooks = async (genre, client) => {
-//   const { loading, data } = await client.query({
-//     query: FILTERED_BOOKS,
-//     variables: { genre }
-//   })
-//   if (loading) { return "loading..." }
-//   console.log('filtered books data:', data)
-//   return data
-// }
 
 const App = () => {
   const [token, setToken] = useState(null)
@@ -139,7 +122,7 @@ const App = () => {
         setRecommendedGenre(myInfo.data.me.favoriteGenre)
       }
       // else {
-      //   setRecommendedGenre('n/a')
+      //   setRecommendedGenre('')
       // }
     }
   }, [myInfo])

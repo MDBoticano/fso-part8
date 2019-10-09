@@ -1,1 +1,1 @@
-Exercises for FullStackOpen Part 8: GraphQL
+Exercises for FullStackOpen [Part 8: GraphQL](https://fullstackopen.com/en/part8)
